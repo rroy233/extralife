@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an improvement to ExtraLife.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Describe the task you are trying to complete and where the current workflow gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like ExtraLife to do?
+      description: Describe the behavior or outcome you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or examples
+      description: Add examples that help explain the request. Use synthetic data and remove private details.
+    validations:
+      required: false

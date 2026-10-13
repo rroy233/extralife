@@ -1,0 +1,23 @@
+# Dependencies (there are none at runtime, but keep the door open)
+node_modules/
+
+# Local index cache — regenerated automatically
+.cache/
+*.tsbuildinfo
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Screenshot generator scratch
+.chrome-profile/
+.screenshot-*.html
+.screenshot-*.png
+
+# Scratch
+*.log
+extralife-*.txt
+extralife-*.md
+extralife-*.json

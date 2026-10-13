@@ -1,0 +1,51 @@
+{
+  "name": "@rroy233/extralife",
+  "version": "0.1.1",
+  "description": "续命 — export Codex session context as a portable handoff for any AI agent.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rroy233/extralife.git"
+  },
+  "homepage": "https://github.com/rroy233/extralife#readme",
+  "bugs": {
+    "url": "https://github.com/rroy233/extralife/issues"
+  },
+  "type": "module",
+  "bin": {
+    "extralife": "bin/extralife.js",
+    "xl": "bin/extralife.js"
+  },
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "docs/images",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:watch": "node --test --watch test/*.test.js",
+    "start": "node bin/extralife.js",
+    "screenshots": "node tools/screenshots.mjs"
+  },
+  "keywords": [
+    "codex",
+    "context",
+    "handoff",
+    "cli",
+    "agent",
+    "ai",
+    "session",
+    "continuity"
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible problem in ExtraLife.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please share a synthetic or redacted example. **Do not attach Codex rollout files or raw transcripts**; they can contain private source code and credentials.
+  - type: input
+    id: version
+    attributes:
+      label: ExtraLife version
+      description: Include the output of `extralife --version`.
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Node.js version and operating system
+      placeholder: Node.js 24.0.0, macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and steps to reproduce
+      description: Remove secrets, private paths, and project-specific source before posting.
+      render: shell
+      placeholder: |
+        extralife --here --list
+        1. Run ...
+        2. Select ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the exact error message when possible.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials and private project data, and I did not attach a raw Codex transcript.
+          required: true
