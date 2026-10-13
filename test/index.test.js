@@ -247,6 +247,13 @@ describe('buildSessionIndex', () => {
     recent.userMessage('recent session');
 
     const home = makeHome([old, recent]);
+    const files = await findSessionFiles({ home });
+    const oldTime = new Date('2020-01-01T00:00:00.000Z');
+    const recentTime = new Date('2026-01-01T00:00:00.000Z');
+    for (const file of files) {
+      const timestamp = file.file.endsWith('-old.jsonl') ? oldTime : recentTime;
+      fs.utimesSync(file.file, timestamp, timestamp);
+    }
     const entries = await buildSessionIndex({ home, useCache: false });
     assert.equal(entries[0].id, 'new');
   });
@@ -274,6 +281,9 @@ describe('buildSessionIndex', () => {
     b.meta();
     b.userMessage('cache me');
     const home = makeHome([b]);
+    const pinned = new Date('2026-01-01T00:00:00.000Z');
+    const [source] = await findSessionFiles({ home });
+    fs.utimesSync(source.file, pinned, pinned);
     const cache = freshDir();
     const previous = process.env.EXTRALIFE_CACHE_DIR;
     process.env.EXTRALIFE_CACHE_DIR = cache;
@@ -287,10 +297,8 @@ describe('buildSessionIndex', () => {
       const stat = fs.statSync(first[0].file);
       const original = fs.readFileSync(first[0].file, 'utf8');
       fs.writeFileSync(first[0].file, original.replace('cache me', 'cachedXX'), 'utf8');
-      // Pin the mtime to exactly the millisecond the cache key was built from.
-      // Filesystems keep sub-millisecond precision, so merely "restoring" the
-      // original Date can land on a different floored millisecond.
-      const pinned = new Date(Math.floor(stat.mtimeMs));
+      // Keep the cache key stable across filesystems with different timestamp
+      // precision by using the same fixed, whole-second timestamp.
       fs.utimesSync(first[0].file, pinned, pinned);
       assert.equal(
         Math.floor(fs.statSync(first[0].file).mtimeMs),

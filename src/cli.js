@@ -213,18 +213,6 @@ export async function main(argv = process.argv.slice(2), io = {}) {
 
   const home = flags.home ? path.resolve(String(flags.home)) : codexHome();
 
-  // ── Resolve the Codex home ────────────────────────────────────────────────
-  const inspection = await inspectCodexHome(home);
-  if (!inspection.ok) {
-    stderr.write(
-      `${style.red('error')} ${inspection.reason}\n\n` +
-        `ExtraLife reads Codex session transcripts. If Codex is installed elsewhere,\n` +
-        `point at it explicitly:\n\n  extralife --home /path/to/.codex\n\n` +
-        `or set the CODEX_HOME environment variable.\n`,
-    );
-    return 3;
-  }
-
   // Shorthands.
   if (flags.json) {
     // `--json` is an explicit request for a machine-readable stdout stream.
@@ -275,8 +263,33 @@ export async function main(argv = process.argv.slice(2), io = {}) {
 
   const quiet = Boolean(flags.quiet) || Boolean(flags.stdout) || format !== 'handoff';
 
-  // ── Build the index ───────────────────────────────────────────────────────
+  // A direct transcript path is self-contained, so it can be exported even on
+  // machines that do not have a Codex home directory. Session IDs and picker
+  // operations still need the Codex home to build the index.
   const explicitTarget = positionals[0];
+  const targetPath = explicitTarget === undefined ? null : path.resolve(explicitTarget);
+  let directTranscript = false;
+  if (targetPath) {
+    try {
+      directTranscript = fs.statSync(targetPath).isFile();
+    } catch {
+      // A missing path may still be a session id; resolve it through the index.
+    }
+  }
+  if (!directTranscript || flags.list) {
+    const inspection = await inspectCodexHome(home);
+    if (!inspection.ok) {
+      stderr.write(
+        `${style.red('error')} ${inspection.reason}\n\n` +
+          `ExtraLife reads Codex session transcripts. If Codex is installed elsewhere,\n` +
+          `point at it explicitly:\n\n  extralife --home /path/to/.codex\n\n` +
+          `or set the CODEX_HOME environment variable.\n`,
+      );
+      return 3;
+    }
+  }
+
+  // ── Build the index ───────────────────────────────────────────────────────
   const needsPicker = !explicitTarget;
 
   /** @type {import('./codex/index-cache.js').SessionListEntry[]} */

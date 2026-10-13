@@ -12,6 +12,7 @@ import { renderJson } from '../src/render/json.js';
 import { renderMarkdown } from '../src/render/markdown.js';
 import { estimateTokens } from '../src/util/format.js';
 import { sampleSession, tempDir, TranscriptBuilder } from './helpers/fixture.js';
+import { makeSecret } from './helpers/secrets.js';
 
 const dirs = [];
 function freshDir() {
@@ -180,19 +181,21 @@ describe('renderHandoff', () => {
   it('redacts credentials by default and can be told not to', async () => {
     const dir = freshDir();
     const b = new TranscriptBuilder({ cwd: dir });
+    const apiKey = makeSecret('sk-proj-');
+    const bearerToken = makeSecret();
     b.meta();
-    b.userMessage('deploy with OPENAI_API_KEY=sk-proj-AbCdEf0123456789GhIjKlMnOpQrStUv');
-    b.command('curl -H "Authorization: Bearer abcdef1234567890abcdef" https://api.example.com');
+    b.userMessage(['deploy with OPENAI_API_KEY=', apiKey].join(''));
+    b.command(['curl -H "Authorization: Bearer ', bearerToken, '" https://api.example.com'].join(''));
     b.agentMessage('done', 'final_answer');
     const session = await parseSessionFile(b.writeTo(dir));
 
     const redacted = renderHandoff(session);
-    assert.ok(!redacted.text.includes('sk-proj-AbCdEf0123456789'), 'the key is gone');
+    assert.ok(!redacted.text.includes(apiKey), 'the key is gone');
     assert.ok(redacted.stats.redactionCount > 0, 'redactions are reported');
     assert.ok(redacted.text.includes('[REDACTED'));
 
     const raw = renderHandoff(session, { redact: false });
-    assert.ok(raw.text.includes('sk-proj-AbCdEf0123456789'), 'opt-out keeps the original');
+    assert.ok(raw.text.includes(apiKey), 'opt-out keeps the original');
     assert.equal(raw.stats.redactionCount, 0);
   });
 
@@ -253,11 +256,12 @@ describe('renderJson', () => {
   it('redacts secrets in the JSON stream', async () => {
     const dir = freshDir();
     const b = new TranscriptBuilder({ cwd: dir });
+    const token = makeSecret('ghp_', 20);
     b.meta();
-    b.userMessage('token is ghp_16C7e42F292c6912E7710c838347Ae178B4a');
+    b.userMessage(['token is ', token].join(''));
     const session = await parseSessionFile(b.writeTo(dir));
     const json = renderJson(session);
-    assert.ok(!json.includes('ghp_16C7e42F292c6912E7710c838347Ae178B4a'));
+    assert.ok(!json.includes(token));
     assert.ok(json.includes('[REDACTED'));
   });
 

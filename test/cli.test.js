@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { sampleSession, tempDir, TranscriptBuilder } from './helpers/fixture.js';
+import { makeSecret } from './helpers/secrets.js';
 
 const execFileAsync = promisify(execFile);
 const BIN = fileURLToPath(new URL('../bin/extralife.js', import.meta.url));
@@ -305,20 +306,21 @@ describe('cli — exporting', () => {
     const work = freshDir('extralife-redact-work-');
     const day = path.join(home, 'sessions', '2026', '10', '10');
     fs.mkdirSync(day, { recursive: true });
+    const apiKey = makeSecret('sk-proj-');
     const b = new TranscriptBuilder({ sessionId: 'cccc0000-1111-2222-3333-444455556666', cwd: '/Users/dev/secret' });
     b.meta();
-    b.userMessage('deploy using OPENAI_API_KEY=sk-proj-AbCdEf0123456789GhIjKlMnOp');
+    b.userMessage(['deploy using OPENAI_API_KEY=', apiKey].join(''));
     b.agentMessage('done', 'final_answer');
     fs.writeFileSync(path.join(day, 'rollout-secret.jsonl'), b.toJSONL());
 
     const redacted = await run(['cccc0000', '-y', '--stdout', '--home', home, '--no-cache'], { cwd: work });
     assert.equal(redacted.code, 0);
-    assert.ok(!redacted.stdout.includes('sk-proj-AbCdEf0123456789'), 'secret removed');
+    assert.ok(!redacted.stdout.includes(apiKey), 'secret removed');
     assert.ok(redacted.stdout.includes('[REDACTED'));
 
     const raw = await run(['cccc0000', '-y', '--stdout', '--no-redact', '--home', home, '--no-cache'], { cwd: work });
     assert.equal(raw.code, 0);
-    assert.ok(raw.stdout.includes('sk-proj-AbCdEf0123456789'), 'opt-out preserves the text');
+    assert.ok(raw.stdout.includes(apiKey), 'opt-out preserves the text');
   });
 
   it('creates the output directory when it does not exist', async () => {
